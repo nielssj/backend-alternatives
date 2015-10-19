@@ -4,6 +4,7 @@ var cookieParser = require('cookie-parser');
 var cors = require('cors');
 var mongoose = require('mongoose');
 var http = require("http");
+var Q = require("q");
 
 // Configure data models
 var models = require("../models/data_model")(mongoose);
@@ -22,26 +23,29 @@ var moment_service = require('../services/moment_service')(app, models);
 //var chat_service = require('../services/chat_service')(app);
 
 var Server = {
-    start: function(config, callback) {
-        // TODO: Rewrite this to return a promise
+    start: function(config) {
+        return Q.Promise(function(resolve, reject, notify) {
+            // Connect to database
+            var db = mongoose.connection;
+            mongoose.connect(config.mongoCS);
 
-        // Connect to database
-        var db = mongoose.connection;
-        mongoose.connect(config.mongoCS);
-
-        // On failure to connect, abort server startup and show error
-        db.on('error', console.error.bind(console, 'connection error:'));
-
-        // On successful connection, finalize server startup
-        db.once('open', function() {
-            console.log("Connected to database successfully!");
-
-            // Start web server
-            server.listen(config.port, function() {
-                console.log('Server running at http://127.0.0.1:' + config.port);
-                if (callback) callback();
+            // On failure to connect, abort server startup and show error
+            db.on('error', function(err) {
+                console.error(err);
+                reject(err);
             });
-        });
+
+            // On successful connection, finalize server startup
+            db.once('open', function() {
+                console.log("Connected to database successfully!");
+
+                // Start web server
+                server.listen(config.port, function() {
+                    console.log('Server running at http://127.0.0.1:' + config.port);
+                    resolve();
+                });
+            });
+        })
     },
 
     stop: server.close

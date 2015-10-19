@@ -14,7 +14,8 @@ describe('Moment service', function() {
         server.start({
             port: port,
             mongoCS: "mongodb://localhost/express-mongodb-rabbitmq"
-        }, done);
+        })
+        .then(done);
     });
 
     /*after(function() {
