@@ -59,6 +59,21 @@ describe('Moment service', function() {
         });
     });
 
+    describe('Collection - GET', function() {
+        it('returns all moments', function (done) {
+            req.get('/moment')
+                .on('data', function (data) {
+                    var response = this.response;
+                    expect(response.statusCode).to.equal(200);
+
+                    var body = JSON.parse(data);
+                    expect(body).to.be.an("Array").and.have.length(2);
+                    done();
+                })
+                .on('error', done);
+        });
+    });
+
     describe('Element - GET', function() {
         it('returns a moment based on the id', function(done) {
             var moment = testData[0];
@@ -122,8 +137,9 @@ describe('Moment service', function() {
             req.del('/moment/' + momentId)
                 .on('data', function(data) {
                     var response = this.response;
-                    var body = JSON.parse(data);
                     expect(response.statusCode).to.equal(200);
+
+                    var body = JSON.parse(data);
                     expect(body.authorName).to.equal(moment.authorName);
                     expect(body.text).to.equal(moment.text);
                     expect(body._id).to.be.a("String").and.have.length(24);
