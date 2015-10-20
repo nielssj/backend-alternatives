@@ -1,8 +1,13 @@
 var expect = require('chai').expect;
 var request = require('request');
 var server = require('../app/server');
+var MongoClient = require('mongodb').MongoClient;
+
+var testData = require("./test_data");
 
 var port = 1338;
+var mongoCS = "mongodb://localhost/express-mongodb-rabbitmq";
+
 var req = request.defaults({
     baseUrl:  "http://127.0.0.1:" + port,
     json: true
@@ -11,24 +16,36 @@ var req = request.defaults({
 describe('Moment service', function() {
 
     before(function(done) {
-        server.start({
-            port: port,
-            mongoCS: "mongodb://localhost/express-mongodb-rabbitmq"
-        })
-        .then(done);
+        server.start({ port:port, mongoCS: mongoCS}).then(done);
     });
 
-    /*after(function() {
-        server.stop();
-    });*/
+    beforeEach(function(done) {
+        MongoClient.connect(mongoCS)
+            .then(function(db) {
+                db.dropCollection("moments");
+                return db;
+            })
+            .then(function(db) {
+                db.collection('moments').insertMany(testData);
+                return db;
+            })
+            .then(function(db) {
+                db.close(done);
+            })
+            .then(null, function(err) { done(err) });
+    });
 
     it('returns a moment based on the id', function(done) {
-        req.get('/moment/5623b13f12618795514b39cf')
+        var moment = testData[0];
+        var momentId = moment._id.toString();
+        req.get('/moment/' + momentId)
             .on('data', function(data) {
-                var resp = this.response;
+                var response = this.response;
+                expect(response.statusCode).to.equal(200);
+
                 var body = JSON.parse(data);
-                expect(resp.statusCode).to.equal(200);
-                expect(body.authorName).to.equal("Niels Søholm");
+                expect(body.authorName).to.equal(moment.authorName);
+                expect(body.text).to.equal(moment.text);
                 expect(body._id).to.be.a("String").and.have.length(24);
                 expect(body.created).to.be.a("String").and.have.length(24);
                 expect(body.modified).to.be.a("String").and.have.length(24);
@@ -40,8 +57,8 @@ describe('Moment service', function() {
 
     it('returns "Not Found" upon an unknown ID', function(done) {
         req.get('/moment/5623b13f12618795514b39cd')
-            .on('response', function(resp) {
-                expect(resp.statusCode).to.equal(404);
+            .on('response', function(response) {
+                expect(response.statusCode).to.equal(404);
                 done();
             })
             .on('error', done);
@@ -50,13 +67,14 @@ describe('Moment service', function() {
     it('creates a moment upon valid POST', function(done) {
         var moment = {
             authorName: "John Doe",
-            text: "Lorem ipsum.."
+            text: "This is a beautiful message"
         };
         req.post('/moment', { body:moment })
             .on('data', function(data) {
-                var resp = this.response;
+                var response = this.response;
+                expect(response.statusCode).to.equal(200);
+
                 var body = JSON.parse(data);
-                expect(resp.statusCode).to.equal(200);
                 expect(body.authorName).to.equal(moment.authorName);
                 expect(body.text).to.equal(moment.text);
                 expect(body._id).to.be.a("String").and.have.length(24);
@@ -66,5 +84,56 @@ describe('Moment service', function() {
                 done();
             })
             .on('error', done);
+    });
+
+    it('updates a moments text upon valid UPDATE', function(done) {
+        var momentId = testData[0]._id;
+        var moment = {
+            text: "This is a beautiful message"
+        };
+        req.put('/moment/' + momentId, { body:moment })
+            .on('response', function(response) {
+
+            })
+            .on('data', function(data) {
+                var response = this.response;
+                expect(response.statusCode).to.equal(200);
+
+                var body = JSON.parse(data);
+                expect(body.authorName).to.equal(testData[0].authorName);
+                expect(body.text).to.equal(moment.text);
+                expect(body.modified).to.not.equal(testData[0].modified);
+                expect(body.created).to.equal(testData[0].created);
+                done();
+            })
+            .on('error', done);
+    });
+
+    it('deletes a moment upon valid DELETE', function(done) {
+        var moment = testData[0];
+        var momentId = moment._id.toString();
+        req.del('/moment/' + momentId)
+           .on('data', function(data) {
+               var response = this.response;
+               var body = JSON.parse(data);
+               expect(response.statusCode).to.equal(200);
+               expect(body.authorName).to.equal(moment.authorName);
+               expect(body.text).to.equal(moment.text);
+               expect(body._id).to.be.a("String").and.have.length(24);
+               expect(body.created).to.be.a("String").and.have.length(24);
+               expect(body.modified).to.be.a("String").and.have.length(24);
+               expect(body.commentCount).to.equal(0);
+
+               MongoClient.connect(mongoCS)
+                   .then(function(db) {
+                       return db.collection("moments").find().toArray()
+                   })
+                   .then(function(moments) {
+                       expect(moments).to.have.length(1);
+                       expect(moments[0]._id.toString()).to.equal(testData[1]._id.toString());
+                       done();
+                   });
+           })
+           .on('error', done);
     });
 });
