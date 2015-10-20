@@ -28,9 +28,7 @@ describe('Moment service', function() {
                     .then(function(result) {
                         return db.collection('moments').insertMany(testData, { w:1 });
                     })
-                    .then(function(result) {
-                        return db.close(true, done);
-                    })
+                    .then(db.close.bind(db, true, done))
                     .then(null, function(err) { done(err) });
             })
             .then(null, function(err) {
