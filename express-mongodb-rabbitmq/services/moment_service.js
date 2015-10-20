@@ -84,7 +84,6 @@ app.delete('/moment/:id', function(req, res, next) {
 // Generic error handler used throughout service
 function errorHandler(res, next, err) {
     if (err.name == "ValidationError") {
-        console.warn("Validation error", err);
         res.status(400).send(err.toString());
         next();
     } else {
