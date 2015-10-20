@@ -168,12 +168,13 @@ describe('Moment service', function() {
 
                     MongoClient.connect(mongoCS)
                         .then(function(db) {
-                            return db.collection("moments").findOne({"_id": testData[0]._id});
+                            return db.collection("moments").findOne({"_id": testData[0]._id})
+                                .then(function(dbMoment) {
+                                    expect(dbMoment.text).to.equal(moment.text);
+                                    db.close(true, done);
+                                })
                         })
-                        .then(function(dbMoment) {
-                            expect(dbMoment.text).to.equal(moment.text);
-                            done();
-                        });
+                        .then(null, done);
                 })
                 .on('error', done);
         });
@@ -199,12 +200,13 @@ describe('Moment service', function() {
                     MongoClient.connect(mongoCS)
                         .then(function(db) {
                             return db.collection("moments").find().toArray()
+                                .then(function(moments) {
+                                    expect(moments).to.have.length(1);
+                                    expect(moments[0]._id.toString()).to.equal(testData[1]._id.toString());
+                                    db.close(true, done);
+                                })
                         })
-                        .then(function(moments) {
-                            expect(moments).to.have.length(1);
-                            expect(moments[0]._id.toString()).to.equal(testData[1]._id.toString());
-                            done();
-                        });
+                        .then(null, done);
                 })
                 .on('error', done);
         });
