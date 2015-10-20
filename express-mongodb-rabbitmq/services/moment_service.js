@@ -2,7 +2,7 @@
 
 module.exports = function(app, models) {
 
-// Create - Moment
+// Collection - POST
 app.post('/moment', function (req, res, next) {
     var newMoment = new models.Moment(req.body);
 
@@ -14,7 +14,7 @@ app.post('/moment', function (req, res, next) {
         .then(null, errorHandler.bind(this, res, next));
 });
 
-// Read (plural) - Moment
+// Collection - GET
 app.get('/moment', function(req, res, next) {
     // Construct basic query
     var query = models.Moment
@@ -29,7 +29,7 @@ app.get('/moment', function(req, res, next) {
         .then(null, errorHandler.bind(this, res, next));
 });
 
-// Read - Moment
+// Element - GET
 app.get('/moment/:id', function(req, res, next) {
     models.Moment.findById(req.params.id)
         .then(function(moment) {
@@ -44,7 +44,7 @@ app.get('/moment/:id', function(req, res, next) {
         .then(null, errorHandler.bind(this, res, next));
 });
 
-// Update - Moment
+// Element - PUT
 app.put('/moment/:id', function(req, res, next) {
     models.Moment.findOne(req.params.id)
         .then(function(moment) {
@@ -66,7 +66,7 @@ app.put('/moment/:id', function(req, res, next) {
         .then(null, errorHandler.bind(this, res, next));
 });
 
-// Delete - Moment
+// Element - DELETE
 app.delete('/moment/:id', function(req, res, next) {
     models.Moment.findOneAndRemove({"_id":req.params.id})
         .then(function(deletedMoment) {
