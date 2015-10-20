@@ -57,6 +57,46 @@ describe('Moment service', function() {
                 })
                 .on('error', done);
         });
+
+        it('returns an appropriate error upon missing text field', function(done) {
+            var moment = {
+                authorName: "John Doe"
+            };
+            req.post('/moment', { body:moment })
+                .on('data', function(data) {
+                    var response = this.response;
+                    expect(response.statusCode).to.equal(400);
+                    var body = String(data);
+                    expect(body).to.be.a("string").and.to.contain("`text` is required");
+                    done();
+                })
+                .on('error', done);
+        });
+
+        it('returns an appropriate error upon missing authorName', function(done) {
+            var moment = {
+                text: "This is a beautiful message"
+            };
+            req.post('/moment', { body:moment })
+                .on('data', function(data) {
+                    var response = this.response;
+                    expect(response.statusCode).to.equal(400);
+                    var body = String(data);
+                    expect(body).to.be.a("string").and.to.contain("`authorName` is required");
+                    done();
+                })
+                .on('error', done);
+        });
+
+        it('returns an appropriate error upon empty body', function(done) {
+            req.post('/moment')
+                .on('data', function(data) {
+                    var response = this.response;
+                    expect(response.statusCode).to.equal(400);
+                    done();
+                })
+                .on('error', done);
+        });
     });
 
     describe('Collection - GET', function() {
