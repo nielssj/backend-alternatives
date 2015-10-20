@@ -22,17 +22,21 @@ describe('Moment service', function() {
     beforeEach(function(done) {
         MongoClient.connect(mongoCS)
             .then(function(db) {
-                db.dropCollection("moments");
-                return db;
+                // Drop and re-insert test data
+                db.dropCollection("moments")
+                    .then(null, function(err) { /* If collection does not exist and we can't drop it, that's okay too. */ })
+                    .then(function(result) {
+                        return db.collection('moments').insertMany(testData, { w:1 });
+                    })
+                    .then(function(result) {
+                        return db.close(true, done);
+                    })
+                    .then(null, function(err) { done(err) });
             })
-            .then(function(db) {
-                db.collection('moments').insertMany(testData);
-                return db;
+            .then(null, function(err) {
+                console.log("Failed to connect to MongoDB, is it running?");
+                done(err);
             })
-            .then(function(db) {
-                db.close(done);
-            })
-            .then(null, function(err) { done(err) });
     });
 
     describe('Collection - POST', function() {
