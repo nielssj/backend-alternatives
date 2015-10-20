@@ -164,11 +164,18 @@ describe('Moment service', function() {
                     expect(response.statusCode).to.equal(200);
 
                     var body = JSON.parse(data);
-                    expect(body.authorName).to.equal(testData[0].authorName);
                     expect(body.text).to.equal(moment.text);
                     expect(body.modified).to.not.equal(testData[0].modified);
                     expect(body.created).to.equal(testData[0].created);
-                    done();
+
+                    MongoClient.connect(mongoCS)
+                        .then(function(db) {
+                            return db.collection("moments").findOne({"_id": testData[0]._id});
+                        })
+                        .then(function(dbMoment) {
+                            expect(dbMoment.text).to.equal(moment.text);
+                            done();
+                        });
                 })
                 .on('error', done);
         });
