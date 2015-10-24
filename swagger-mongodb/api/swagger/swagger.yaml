@@ -1,0 +1,173 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Backend Alternatives
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+paths:
+  /moment:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: moment_service
+    # Collection - GET
+    get:
+      description: Returns a specific moment to the caller
+      operationId: getMoments
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Moment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    # Collection - POST
+    post:
+      description: Creates a new moment
+      operationId: postMoment
+      parameters:
+        - name: moment
+          in: body
+          schema:
+            $ref: "#/definitions/Moment"
+          description: The new moment to be posted
+          required: true
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Moment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /moment/{id}:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: moment_service
+    # Element - GET
+    get:
+      description: Retrieve a specific moment
+      operationId: getMoment
+      parameters:
+        - name: id
+          in: path
+          description: The id of the moment to retrieve
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Moment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    # Element - PUT
+    put:
+      description: Modifies a given moment according to the submitted object
+      operationId: putMoment
+      parameters:
+        - name: id
+          in: path
+          description: The id of the moment to modify
+          required: true
+          type: string
+        - name: changes
+          in: body
+          schema:
+            $ref: "#/definitions/Moment"
+          description: A moment object describing the changes
+          required: true
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Moment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    # Element - DELETE
+    delete:
+      description: Delete a specific moment
+      operationId: deleteMoment
+      parameters:
+        - name: id
+          in: path
+          description: The id of the moment to modify
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Moment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  Moment:
+    required:
+      - authorName
+      - text
+    properties:
+      _id:
+        type: string
+      authorName:
+        type: string
+      text:
+        type: string
+      created:
+        type: string
+      modified:
+        type: string
+      commentCount:
+        type: number
+      __v:
+        type: number
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
