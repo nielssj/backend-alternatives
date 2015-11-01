@@ -19,7 +19,6 @@ produces:
   - application/json
 paths:
   /moment:
-    # binds a127 app logic to a route
     x-swagger-router-controller: moment_service
     # Collection - GET
     get:
@@ -65,7 +64,6 @@ paths:
           schema:
             $ref: "#/definitions/ErrorResponse"
   /moment/{id}:
-    # binds a127 app logic to a route
     x-swagger-router-controller: moment_service
     # Element - GET
     get:
@@ -142,6 +140,92 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+  /moment/{id}/comment:
+    x-swagger-router-controller: moment_service
+    # Collection - GET (query)
+    get:
+      description: Returns list of all comments which have been posted to the given moment
+      operationId: getComments
+      parameters:
+        - name: id
+          in: path
+          description: The id of the parent moment
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Comment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    # Collection - POST
+    post:
+      description: Posts a new comment to the given moment
+      operationId: postComment
+      parameters:
+        - name: id
+          in: path
+          description: The id of the parent moment
+          required: true
+          type: string
+        - name: comment
+          in: body
+          schema:
+            $ref: "#/definitions/Comment"
+          description: The new comment to be posted
+          required: true
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Comment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /moment/{id}/comment/{cid}:
+    x-swagger-router-controller: moment_service
+    # Element - DELETE
+    delete:
+      description: Delete a specific comment from the given moment
+      operationId: deleteComment
+      parameters:
+        - name: id
+          in: path
+          description: The id of the parent moment
+          required: true
+          type: string
+        - name: cid
+          in: path
+          description: The id of the comment to delete
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Comment"
+        "400":
+          description: Success
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
@@ -157,12 +241,36 @@ definitions:
         type: string
       text:
         type: string
+        maxLength: 300
       created:
         type: string
       modified:
         type: string
       commentCount:
         type: number
+      __v:
+        type: number
+  Comment:
+    required:
+      - authorName
+      - text
+      - parentMoment
+    properties:
+      _id:
+        type: string
+      authorName:
+        type: string
+      parent:
+        type: string
+      parentMoment:
+        type: string
+      text:
+        type: string
+        maxLength: 300
+      created:
+        type: string
+      modified:
+        type: string
       __v:
         type: number
   ErrorResponse:

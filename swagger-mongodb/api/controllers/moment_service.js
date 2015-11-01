@@ -3,7 +3,6 @@ var models = require("../models/data_model")(mongoose);
 
 module.exports = {
 
-    // Collection - POST
     postMoment: function(req, res) {
         res.type("json");
 
@@ -15,7 +14,6 @@ module.exports = {
             .then(null, errorHandler.bind(this, res));
     },
 
-    // Collection - GET
     getMoments: function (req, res) {
         res.type("json");
 
@@ -30,7 +28,6 @@ module.exports = {
             .then(null, errorHandler.bind(this, res));
     },
 
-    // Element - GET
     getMoment: function(req, res, next) {
         res.type("json");
 
@@ -46,7 +43,6 @@ module.exports = {
             .then(null, errorHandler.bind(this, res));
     },
 
-    // Element - PUT
     putMoment: function(req, res) {
         res.type("json");
 
@@ -69,7 +65,6 @@ module.exports = {
             .then(null, errorHandler.bind(this, res));
     },
 
-    // Element - DELETE
     deleteMoment: function(req, res) {
         res.type("json");
 
@@ -78,6 +73,46 @@ module.exports = {
             .then(function(deletedMoment) {
                 if(deletedMoment) {
                     res.send(deletedMoment);
+                } else {
+                    res.status(404);
+                }
+            })
+            .then(null, errorHandler.bind(this, res));
+    },
+
+    getComments: function (req, res) {
+        res.type("json");
+
+        var id = req.swagger.params.id.value;
+        var query = models.Comment
+            .find({ parentMoment:id });
+
+        query.exec()
+            .then(function(comments) {
+                res.send(comments);
+            })
+            .then(null, errorHandler.bind(this, res));
+    },
+
+    postComment: function(req, res) {
+        res.type("json");
+
+        var newComment = new models.Comment(req.body);
+        newComment.save()
+            .then(function() {
+                res.send(newComment._doc);
+            })
+            .then(null, errorHandler.bind(this, res));
+    },
+
+    deleteComment: function(req, res) {
+        res.type("json");
+
+        var cid = req.swagger.params.cid.value;
+        models.Comment.findOneAndRemove({"_id":cid})
+            .then(function(deletedComment) {
+                if(deletedComment) {
+                    res.send(deletedComment);
                 } else {
                     res.status(404);
                 }
