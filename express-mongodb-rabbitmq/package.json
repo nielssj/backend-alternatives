@@ -1,5 +1,5 @@
 {
-  "name": "backend-alternatives_express-mongodb-rabbitmq",
+  "name": "backend-alternatives_express-mongodb-rabbitmqjj",
   "version": "0.0.1",
   "dependencies": {
     "amqplib": "^0.4.0",
